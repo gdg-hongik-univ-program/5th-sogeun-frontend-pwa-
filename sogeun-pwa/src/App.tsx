@@ -1,4 +1,5 @@
 // src/App.tsx
+// 화면 전체를 관리하는 틀. 주소 확인하고 그 주소에 맞는 페이지를 화면에 갈아 끼우는 역할.
 import { useState } from "react";
 import styled from "styled-components";
 
