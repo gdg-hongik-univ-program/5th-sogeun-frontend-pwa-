@@ -83,7 +83,3 @@ npm run preview
 - 브랜치 만들 때나 커밋 메시지에 이 번호를 쓰면 나중에 추적하기 좋습니다!
   - 예: `feat/login-page-#23`
   - 예: `[Feat] 로그인 UI 구현 (close #23)`
-
-```
-
-```
