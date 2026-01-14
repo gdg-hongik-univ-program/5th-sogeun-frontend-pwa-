@@ -1,6 +1,6 @@
 ---
 name: 🐛HotFix
-about: 치명적인 버그
+about: 비상사태! 지금 당장 안 고치면 앱을 못 쓸 때.(긴급 수정)
 title: "🐛 Hot-Fix: "
 labels: "hotfix"
 ---

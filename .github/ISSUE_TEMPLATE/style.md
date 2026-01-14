@@ -1,6 +1,6 @@
 ---
 name: 👔 Style
-about: 디자인적인 요소 변경
+about: 디자인적인 요소 변경 (기능은 그대로인데, **눈에 보이는 디자인(CSS)**이나 코드 줄 맞춤만 바꿀 때.)
 title: "👔 Style: "
 labels: "style"
 ---

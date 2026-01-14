@@ -1,6 +1,6 @@
 ---
 name: 🔧 Question
-about: 궁금한 부분이 있어요.
+about: 궁금한 부분이 있어요. (작업이 아니라 물어보거나 회의하고 싶을 때.)
 title: "❓ Question: "
 labels: "question"
 ---

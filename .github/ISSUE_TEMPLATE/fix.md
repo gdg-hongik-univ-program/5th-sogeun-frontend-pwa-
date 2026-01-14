@@ -1,6 +1,6 @@
 ---
 name: 🐝 Fix
-about: 트러블 슈팅
+about: 기능이 동작은 하는데 뭔가 이상할 때. (급하진 않음) (일반 버그 수정)
 title: "🐝 Fix: "
 labels: "fix"
 ---
