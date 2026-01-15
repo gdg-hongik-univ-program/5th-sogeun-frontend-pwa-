@@ -22,11 +22,15 @@ npm run preview
 
 ```bash
 📦 src
-┣ 📂 assets # 이미지, 폰트 등 정적 파일 저장소
-┣ 📂 components # 버튼, 카드 등 재사용 가능한 UI 컴포넌트
-┣ 📂 pages # 실제 페이지 단위 컴포넌트 (Explore, Profile 등)
-┣ 📂 store # Jotai 전역 상태 관리 파일 (atoms)
-┗ 📜 main.tsx # 앱 진입점
+ ┣ 📂 assets      # 이미지, 폰트 등 정적 파일 저장소
+ ┣ 📂 components  # 버튼, 카드 등 재사용 가능한 UI 컴포넌트
+ ┣ 📂 hooks       # 커스텀 훅 관리
+ ┣ 📂 pages       # 실제 페이지 단위 컴포넌트 (GPS,Profile 등)
+ ┣ 📂 store       # Jotai 전역 상태 관리 파일 (atoms)
+ ┣ 📂 types       # TypeScript 타입 정의 파일
+ ┣ 📜 App.tsx     # 메인 앱 컴포넌트 및 라우팅 제어
+ ┣ 📜 index.css   # 전역 스타일 시트
+ ┗ 📜 main.tsx    # 앱 진입점
 ```
 
 ## 깃허브 순서
