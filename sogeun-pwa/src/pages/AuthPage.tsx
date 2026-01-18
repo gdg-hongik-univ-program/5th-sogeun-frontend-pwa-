@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import axios from 'axios';
 import './AuthPage.css'; // CSS 파일은 그대로 두셔도 됩니다 (.css)
 
 export default function AuthPage() {
@@ -16,8 +15,8 @@ export default function AuthPage() {
   const [nickname, setNickname] = useState(''); 
 
   // API 주소
-  const LOGIN_URL = 'http://15.164.164.66:8080/api/auth/login';
-  const SIGNUP_URL = 'http://15.164.164.66:8080/api/auth/signup';
+ /* const LOGIN_URL = 'http://15.164.164.66:8080/api/auth/login';
+  const SIGNUP_URL = 'http://15.164.164.66:8080/api/auth/signup';*/
 
   // 모드 전환 시 입력값 초기화
   const toggleMode = () => {
