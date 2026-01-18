@@ -1,0 +1,78 @@
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--color-bg-app); /* 변수 적용 */
+  padding: 20px;
+}
+
+.auth-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--color-text-main); /* 변수 적용 */
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-input {
+  height: 50px;
+  padding: 0 20px;
+  border-radius: var(--radius-input); /* 변수 적용 */
+  border: 1px solid var(--color-border); /* 변수 적용 */
+  background-color: var(--color-bg-input); /* 변수 적용 */
+  font-size: 16px;
+  color: var(--color-text-main); /* 변수 적용 */
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.auth-input::placeholder {
+  color: var(--color-text-sub); /* 변수 적용 */
+}
+
+.auth-input:focus {
+  border-color: var(--color-primary); /* 포커스 시 메인 컬러 */
+}
+
+.auth-button {
+  height: 55px;
+  border-radius: var(--radius-button); /* 변수 적용 */
+  background-color: var(--color-primary); /* 변수 적용 */
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+  background-color: var(--color-primary-dark); /* 호버 시 진한 컬러 */
+}
+
+.toggle-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--color-text-sub); /* 변수 적용 */
+}
+
+.toggle-link {
+  color: var(--color-text-link); /* 변수 적용 */
+  font-weight: bold;
+  text-decoration: underline;
+  font-size: 15px;
+}
