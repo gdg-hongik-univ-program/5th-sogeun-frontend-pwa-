@@ -1,10 +1,16 @@
 import React, { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
+// 페이지 컴포넌트들
+import AuthPage from "./pages/AuthPage";
 import GPS from "./pages/GPS";
 import SearchPage from "./pages/SearchPage";
 import type { Track } from "./pages/SearchPage";
 
-const App: React.FC = () => {
+// [음악 & GPS 기능] 
+// 원래 feat/spotify... 브랜치에 있던 App의 로직을 'MainScreen'이라는 이름으로 분리했습니다.
+const MainScreen = () => {
   const [currentPage, setCurrentPage] = useState<"gps" | "search">("gps");
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
 
@@ -28,7 +34,7 @@ const App: React.FC = () => {
             <GPS
               onPlusClick={() => setCurrentPage("search")}
               currentTrack={currentTrack}
-              onSelectTrack={handleSelectTrack} // 에러 해결을 위해 반드시 전달
+              onSelectTrack={handleSelectTrack}
             />
           </motion.div>
         ) : (
@@ -48,6 +54,22 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
+  );
+};
+
+// [앱의 메인 진입점]
+// main 브랜치의 라우팅 기능을 유지합니다.
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* 1. 앱을 켜면 로그인 페이지가 먼저 나옴 */}
+        <Route path="/" element={<AuthPage />} />
+
+        {/* 2. 로그인 후 /gps 경로로 이동하면 위에서 만든 음악 기능(MainScreen)이 실행됨 */}
+        <Route path="/gps" element={<MainScreen />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
