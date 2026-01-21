@@ -41,7 +41,8 @@ export default function AuthPage() {
     // 1초 뒤에 무조건 성공했다고 가정!
     setTimeout(() => {
       alert("토큰 없이 테스트 로그인 성공! (개발용)");
-      navigate("/", { state: { userId: id } });
+      // 🔥 [수정됨] 로그인 성공 시 GPS 화면으로 이동
+      navigate("/gps", { state: { userId: id } });
     }, 1000); // 1초 로딩 흉내
 
     /* 진짜 API 코드는 잠시 꺼둠
@@ -54,7 +55,8 @@ export default function AuthPage() {
       if (response.status === 200 || response.status === 201) {
         console.log('🎉 로그인 성공!', response.data);
         alert('소근에 오신 것을 환영해요!');
-        navigate('/', { state: { userId: id } });
+        // 🔥 [수정됨] 나중에 주석 풀 때를 대비해 여기도 /gps로 바꿔두었습니다.
+        navigate('/gps', { state: { userId: id } });
       }
     } catch (error: any) {
       console.error('로그인 에러:', error);
