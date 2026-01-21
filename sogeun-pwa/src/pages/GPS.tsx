@@ -1,7 +1,16 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+// 'verbatimModuleSyntax' 에러 해결을 위한 type import
+import type { Track } from "./SearchPage";
 
-// 1. 타입 정의
+interface GPSProps {
+  onPlusClick: () => void;
+  currentTrack: Track | null;
+  // App.tsx에서 전달받는 함수 타입 누락 해결
+  onSelectTrack: (track: Track) => void;
+}
+
+// 타입 정의 (기존 코드 유지)
 interface HUDCircle {
   id: number;
   r: number;
@@ -9,7 +18,6 @@ interface HUDCircle {
   o: number;
   duration: number;
 }
-
 interface DetectedUser {
   id: number;
   name: string;
@@ -18,7 +26,6 @@ interface DetectedUser {
   angle: number;
   radius: number;
 }
-
 interface Particle {
   id: number;
   top: string;
@@ -95,7 +102,12 @@ const Icons = {
   ),
 };
 
-const GPS: React.FC = () => {
+const GPS: React.FC<GPSProps> = ({
+  onPlusClick,
+  currentTrack,
+  onSelectTrack,
+}) => {
+  // 주변 사용자 데이터 (기존 코드 유지)
   const [nearbyUsers] = useState<DetectedUser[]>([
     {
       id: 1,
@@ -107,19 +119,17 @@ const GPS: React.FC = () => {
     },
   ]);
 
-  // ✨ 🔥 파티클 개수 "더 더" 증가 (360개 -> 1200개) 🔥 ✨
   const [particles] = useState<Particle[]>(() =>
-    Array.from({ length: 1200 }, (_, i) => ({
+    Array.from({ length: 40 }, (_, i) => ({
       id: i,
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
-      size: Math.random() * 2.2 + 0.2, // 0.2px ~ 2.4px 크기
-      opacity: Math.random() * 0.4 + 0.1, // 0.1 ~ 0.5 투명도
-      duration: Math.random() * 40 + 20, // 20초 ~ 60초의 매우 느린 부유
+      size: Math.random() * 2.2 + 0.2,
+      opacity: Math.random() * 0.4 + 0.1,
+      duration: Math.random() * 40 + 20,
     })),
   );
 
-  // 불규칙한 간격의 내부 HUD 원 데이터
   const [hudCircles] = useState<HUDCircle[]>(() => {
     const circles: HUDCircle[] = [];
     let currentR = 20;
@@ -153,10 +163,7 @@ const GPS: React.FC = () => {
           "linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 50%, #84FAB0 100%)",
       }}
     >
-      {/* 배경 HUD 그리드 */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(rgba(103,232,249,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20 mix-blend-screen" />
-
-      {/* ✨ 🔥 1200개의 초고밀도 은하수 파티클 레이어 🔥 ✨ */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {particles.map((p) => (
           <motion.div
@@ -185,7 +192,7 @@ const GPS: React.FC = () => {
 
       <div className="flex justify-between items-start pt-12 px-6 z-10">
         <div>
-          <h1 className="text-2xl font-black tracking-tighter leading-none text-white drop-shadow-md">
+          <h1 className="text-2xl font-black tracking-tighter leading-none drop-shadow-md">
             소근
           </h1>
           <p className="text-sm opacity-80 mt-1 font-medium tracking-tight">
@@ -197,8 +204,8 @@ const GPS: React.FC = () => {
         </div>
       </div>
 
+      {/* 레이더 영역 */}
       <div className="relative flex flex-col items-center justify-center w-full aspect-square mt-4 mb-4 z-10 px-6">
-        {/* 외부 물결 파동 */}
         {[0, 2.5, 5.0].map((delay) => (
           <motion.div
             key={`wave-${delay}`}
@@ -223,7 +230,6 @@ const GPS: React.FC = () => {
           />
         ))}
 
-        {/* 외부 회전 세그먼트 */}
         <div className="absolute inset-[-80px] z-15 pointer-events-none">
           <svg viewBox="0 0 420 420" className="w-full h-full overflow-visible">
             {extraSegments.map((seg, i) => (
@@ -249,7 +255,6 @@ const GPS: React.FC = () => {
           </svg>
         </div>
 
-        {/* 내부 HUD 원 파장 효과 */}
         {hudCircles.map((circle, i) => (
           <motion.div
             key={circle.id}
@@ -270,16 +275,17 @@ const GPS: React.FC = () => {
           />
         ))}
 
-        {/* ✨ 🔥 탐지 사용자 카드: 최상단 배치 (z-[80]) 🔥 ✨ */}
         {nearbyUsers.map((user) => (
           <div
             key={user.id}
             className="absolute z-[80]"
-            style={{ transform: `translate(70px, -70px)` }}
+            style={{
+              transform: `rotate(${user.angle}deg) translate(${user.radius}px) rotate(${-user.angle}deg)`,
+            }}
           >
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
               className="w-4 h-4 bg-white rounded-full shadow-[0_0_15px_white] z-30"
             />
             <motion.div
@@ -296,8 +302,43 @@ const GPS: React.FC = () => {
           </div>
         ))}
 
+        {/* 현재 내가 재생 중인 음악 (하단 말풍선) */}
+        <div className="absolute bottom-[-10px] z-[100] pointer-events-auto">
+          <AnimatePresence>
+            {currentTrack && (
+              <motion.div
+                key="player-card"
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                onClick={() => onSelectTrack(currentTrack)} // 클릭 상호작용 추가
+                className="bg-white/30 backdrop-blur-xl border border-white/40 px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-3 min-w-[150px] cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-xl bg-white/20 overflow-hidden border border-white/40">
+                  <img
+                    src={currentTrack.artworkUrl100}
+                    alt="art"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-pink-500 tracking-tighter mb-0.5">
+                    NOW PLAYING
+                  </p>
+                  <p className="text-[12px] font-black truncate max-w-[100px] leading-tight text-white">
+                    {currentTrack.trackName}
+                  </p>
+                  <p className="text-[9px] opacity-70 font-bold truncate max-w-[90px] text-white/80">
+                    {currentTrack.artistName}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* 중앙 아크 및 심전도 */}
         <div className="relative flex items-center justify-center w-[280px] h-[280px] rounded-full">
-          {/* 유동적인 파란색 아크 모션 */}
           <div className="absolute inset-[-35px] z-20 pointer-events-none">
             <motion.svg
               viewBox="0 0 100 100"
@@ -313,7 +354,6 @@ const GPS: React.FC = () => {
                 fill="none"
                 stroke="rgba(0, 255, 255, 1)"
                 strokeWidth="7"
-                strokeLinecap="butt"
                 animate={{
                   strokeDasharray: ["40 250", "226 226", "40 250"],
                   strokeDashoffset: [0, -40, 0],
@@ -324,42 +364,12 @@ const GPS: React.FC = () => {
                   ease: "easeInOut",
                 }}
                 style={{
-                  filter:
-                    "drop-shadow(0 0 15px rgba(0, 255, 255, 0.9)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.7))",
+                  filter: "drop-shadow(0 0 15px rgba(0, 255, 255, 0.9))",
                 }}
               />
             </motion.svg>
           </div>
-
-          {/* 초슬림 3개 세그먼트 */}
-          <div className="absolute inset-[-20px] z-20 pointer-events-none">
-            <motion.svg
-              viewBox="0 0 100 100"
-              className="w-full h-full overflow-visible"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            >
-              {[0, 120, 240].map((angle, i) => (
-                <circle
-                  key={i}
-                  cx="50"
-                  cy="50"
-                  r="46"
-                  fill="none"
-                  stroke="rgba(0, 255, 255, 0.6)"
-                  strokeWidth="1"
-                  strokeDasharray="12 288"
-                  strokeDashoffset={-angle * (300 / 360)}
-                  strokeLinecap="butt"
-                />
-              ))}
-            </motion.svg>
-          </div>
-
-          {/* 중앙 화이트 메인 원 */}
-          <div className="absolute inset-0 rounded-full border-[10px] border-white shadow-[0_0_80px_rgba(255,255,255,1),inset_0_0_40px_rgba(255,255,255,0.6)] z-10" />
-
-          {/* 🏥 최상단 심전도 파형 (z-50) */}
+          <div className="absolute inset-0 rounded-full border-[10px] border-white shadow-[0_0_80px_rgba(255,255,255,1)] z-10" />
           <div className="w-[450px] h-[260px] overflow-visible relative flex items-center justify-center z-50">
             <svg
               width="100%"
@@ -368,15 +378,6 @@ const GPS: React.FC = () => {
               preserveAspectRatio="none"
               className="overflow-visible pointer-events-none"
             >
-              <line
-                x1="-150"
-                y1="50"
-                x2="350"
-                y2="50"
-                stroke="white"
-                strokeWidth="0.5"
-                strokeOpacity="0.1"
-              />
               <motion.path
                 d={centeredPath}
                 fill="none"
@@ -384,16 +385,10 @@ const GPS: React.FC = () => {
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                initial={{ pathLength: 0, pathOffset: 0, opacity: 0 }}
                 animate={{
                   pathLength: [0, 1, 1, 1],
                   pathOffset: [0, 0, 0, 1],
                   opacity: [0, 1, 1, 0],
-                  filter: [
-                    "drop-shadow(0 0 10px white)",
-                    "drop-shadow(0 0 25px white) brightness(1.3)",
-                    "drop-shadow(0 0 10px white)",
-                  ],
                 }}
                 transition={{
                   duration: 5,
@@ -402,43 +397,31 @@ const GPS: React.FC = () => {
                   ease: "easeInOut",
                 }}
               />
-              <motion.circle
-                cx="100"
-                cy="50"
-                r="60"
-                fill="rgba(255,255,255,0.3)"
-                className="blur-3xl"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: [0, 0.7, 0], scale: [0.5, 1.5, 0.8] }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  times: [0, 0.35, 1],
-                }}
-              />
             </svg>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center z-10 -mt-2 mb-6">
+      <div className="flex justify-center z-10 mt-6 mb-6">
         <button className="bg-white/20 backdrop-blur-md px-6 py-2 rounded-full border border-white/40 text-[11px] font-black shadow-lg">
           내 반경 350m
         </button>
       </div>
 
-      {/* 하단 리스트 영역 */}
-      <div className="flex-1 px-6 pb-32 z-10 overflow-y-auto space-y-4">
+      {/* 하단 리스트 */}
+      <div className="flex-1 px-6 pb-32 z-10 overflow-y-auto space-y-4 scrollbar-hide">
         {nearbyUsers.map((user) => (
           <div
             key={user.id}
             className="flex items-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/30 shadow-xl"
           >
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mr-4 shadow-inner">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mr-4">
               <Icons.Music />
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-black leading-tight">{user.song}</h3>
+              <h3 className="text-sm font-black leading-tight truncate">
+                {user.song}
+              </h3>
               <p className="text-[11px] opacity-70 mt-1 font-bold">
                 {user.name}
               </p>
@@ -464,9 +447,10 @@ const GPS: React.FC = () => {
         </button>
         <div className="-mt-12">
           <motion.button
+            onClick={onPlusClick}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(244,114,182,0.5)] border-4 border-white"
+            className="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg border-4 border-white"
           >
             <Icons.Plus />
           </motion.button>

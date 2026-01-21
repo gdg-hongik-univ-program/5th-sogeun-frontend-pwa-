@@ -11,6 +11,7 @@
     "gen-tailwind": "tailwindcss init -p"
   },
   "dependencies": {
+    "@spotify/web-api-ts-sdk": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
