@@ -1,7 +1,7 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import GPS from "./pages/GPS"; // main 브랜치에서 가져온 GPS 추가
+import ProfileEditPage from './pages/ProfileEditPage';
 
 function App() {
   return (
@@ -12,6 +12,8 @@ function App() {
         
         {/* /gps 경로로 접속하면 GPS 페이지를 보여줌 */}
         <Route path="/gps" element={<GPS />} /> 
+
+        <Route path="/profile/edit" element={<ProfileEditPage />} />
       </Routes>
     </BrowserRouter>
   );

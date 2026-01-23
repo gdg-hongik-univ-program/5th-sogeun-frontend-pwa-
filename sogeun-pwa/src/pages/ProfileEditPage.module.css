@@ -1,0 +1,145 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #000000; /* 배경 */
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.contentArea {
+  flex: 1;
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF; /* 라벨: 흰색 */
+  margin-left: 4px;
+}
+
+/* 파일 선택 버튼 스타일링 */
+.fileInput {
+  font-size: 14px;
+  padding: 5px 0;
+  color: #BBBBBB; /* 파일 글자: 잘 보이게 밝은 회색 */
+}
+
+.textInput {
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: 30px; /* 둥근 모양 */
+  
+  /* 다크 모드 스타일 적용 */
+  border: 1px solid #333333; /* 테두리: 어두운 회색 */
+  background-color: #1A1A1A; /* 배경: 진한 다크 그레이 */
+  color: #FFFFFF; /* 입력 글자: 흰색 */
+  
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.textInput::placeholder {
+  color: #666666; /* 플레이스홀더: 어두운 회색 */
+}
+
+.textInput:focus {
+  outline: 2px solid #FF005C; /* 포커스: 핫핑크 */
+  background-color: #222222; /* 포커스 시 배경 살짝 밝게 */
+}
+
+.submitBtn {
+  width: 160px;
+  margin: 40px auto 0 auto;
+  padding: 18px;
+  border-radius: 50px;
+  border: none;
+  background-color: #FF005C; /* 핫핑크 */
+  color: white;
+  
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  display: block; 
+}
+
+.submitBtn:hover {
+  background-color: #D9004C; /* 진한 핑크 */
+}
+
+/* 하단 내비게이션 */
+.bottomNav {
+  display: flex;
+  justify-content: space-between; /* 양옆 균등 배치 */
+  align-items: center;
+  height: 80px;
+  background-color: #000000; /* 다크모드 배경 */
+  border-top: 1px solid #333333;
+  padding: 0 40px; /* 양옆 여백을 줘서 아이콘들을 안쪽으로 모음 */
+  padding-bottom: 10px;
+  position: sticky;
+  bottom: 0;
+}
+
+/* 일반 아이콘 (홈, 나) */
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #666666; /* 비활성: 어두운 회색 */
+  font-size: 24px;
+  width: 50px; /* 터치 영역 확보 */
+}
+
+.navText {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* 활성화된 상태 (흰색) */
+.active {
+  color: #FFFFFF;
+}
+
+/* 중앙 플러스 버튼 */
+.plusBtnWrapper {
+    position: absolute; /* 네비게이션바 기준 절대 위치 */
+    left: 50%; /* 정중앙 배치 */
+    transform: translateX(-50%); /* 정확히 가운데로 보정 */
+    top: -20px;
+    z-index: 10;
+}
+
+.plusBtn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* 완전 동그라미 */
+    background-color: #FF005C; /* 핫핑크 */
+    border: 4px solid #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white; /* 플러스 아이콘 흰색 */
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 0, 92, 0.3); /* 핑크색 은은한 그림자 */
+    transition: transform 0.2s;
+}
+
+.plusBtn:active {
+    transform: scale(0.95); /* 누를 때 살짝 작아지는 효과 */
+}
