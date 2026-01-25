@@ -65,11 +65,6 @@ const App = () => {
       <Routes>
         {/* 1. 앱을 켜면 로그인 페이지가 먼저 나옴 */}
         <Route path="/" element={<AuthPage />} />
-        
-        {/* /gps 경로로 접속하면 GPS 페이지를 보여줌 */}
-        <Route path="/gps" element={<GPS />} /> 
-
-        <Route path="/profile/edit" element={<ProfileEditPage />} />
 
         {/* 2. 로그인 후 /gps 경로로 이동하면 위에서 만든 음악 기능(MainScreen)이 실행됨 */}
         <Route path="/gps" element={<MainScreen />} />
