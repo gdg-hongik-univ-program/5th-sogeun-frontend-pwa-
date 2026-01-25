@@ -1,6 +1,23 @@
 @import "tailwindcss";
 
 :root {
+  --bg-color: #FFFFFF;          /* 배경: 완전 흰색 */
+  --main-color: #FF9E9E;        /* 버튼: 화사한 코랄 핑크 */
+  --main-dark: #FF8585;         /* 버튼 호버: 조금 더 진한 핑크 */
+  
+  --input-bg: #F3F3F3;          /* 입력창: 아주 연한 회색 */
+  --nav-bg: #F9F9F9;            /* 하단바: 밝은 회색 */
+  
+  --text-color: #333333;        /* 글자: 진한 검정 */
+  --border-radius-btn: 999px;   /* 버튼: 완전 둥근 알약 모양 */
+  --border-radius-input: 12px;  /* 입력창: 살짝 둥글게 */
+  
+  --color-primary: #FFAB91;        /* 메인 주황색 (버튼 등) */
+  --color-primary-dark: #FF7043;   /* 진한 주황색 (호버, 강조) */
+  
+  --color-text-main: #5D4037;      /* 메인 텍스트 (진한 갈색) */
+  --color-text-sub: #A09085;       /* 서브 텍스트 (연한 갈색, placeholder) */
+  --color-text-link: #FF7043;      /* 링크 텍스트 */
   --color-primary: #ffab91; /* 메인 주황색 (버튼 등) */
   --color-primary-dark: #ff7043; /* 진한 주황색 (호버, 강조) */
 

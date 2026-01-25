@@ -1,53 +1,45 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./AuthPage.css";
+/* eslint-disable */
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // axios 임포트 확인
+import styles from './AuthPage.module.css';
 
 export default function AuthPage() {
   const navigate = useNavigate();
 
-  // true면 로그인 화면, false면 회원가입 화면 (타입 자동 추론됨: boolean)
+  // true면 로그인 화면, false면 회원가입 화면
   const [isLoginMode, setIsLoginMode] = useState(true);
 
-  // 입력값 상태 관리 (타입 자동 추론됨: string)
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
-  const [pwCheck, setPwCheck] = useState("");
-  const [nickname, setNickname] = useState("");
+  // 입력값 상태 관리
+  const [id, setId] = useState('');
+  const [pw, setPw] = useState('');
+  const [pwCheck, setPwCheck] = useState('');
+  const [nickname, setNickname] = useState('');
 
-  // API 주소
-  /* const LOGIN_URL = 'http://15.164.164.66:8080/api/auth/login';
-  const SIGNUP_URL = 'http://15.164.164.66:8080/api/auth/signup';*/
+  // Vercel 환경 변수에서 가져오는 API 주소
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://pruxd7efo3.execute-api.ap-northeast-2.amazonaws.com/clean](https://pruxd7efo3.execute-api.ap-northeast-2.amazonaws.com/clean';
 
   // 모드 전환 시 입력값 초기화
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
-    setId("");
-    setPw("");
-    setPwCheck("");
-    setNickname("");
+    setId('');
+    setPw('');
+    setPwCheck('');
+    setNickname('');
   };
 
+  // 로그인 로직
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!id || !pw) {
-      alert("아이디와 비밀번호를 입력해주세요.");
+      alert('아이디와 비밀번호를 입력해주세요.');
       return;
     }
 
-    // --- [테스트 모드 시작] ---
-    console.log(`[TEST] 로그인 시도: ID=${id}, PW=${pw}`);
-
-    // 1초 뒤에 무조건 성공했다고 가정!
-    setTimeout(() => {
-      alert("토큰 없이 테스트 로그인 성공! (개발용)");
-      // 🔥 [수정됨] 로그인 성공 시 GPS 화면으로 이동
-      navigate("/gps", { state: { userId: id } });
-    }, 1000); // 1초 로딩 흉내
-
-    /* 진짜 API 코드는 잠시 꺼둠
     try {
-      const response = await axios.post(LOGIN_URL, {
+      // 🚀 실제 백엔드와 통신 시도
+      const response = await axios.post(`${API_URL}/login`, {
         loginId: id,
         password: pw,
       });
@@ -55,41 +47,31 @@ export default function AuthPage() {
       if (response.status === 200 || response.status === 201) {
         console.log('🎉 로그인 성공!', response.data);
         alert('소근에 오신 것을 환영해요!');
-        // 🔥 [수정됨] 나중에 주석 풀 때를 대비해 여기도 /gps로 바꿔두었습니다.
+        // 로그인 성공 시 GPS 화면으로 이동
         navigate('/gps', { state: { userId: id } });
       }
     } catch (error: any) {
       console.error('로그인 에러:', error);
       alert('로그인 실패! 아이디 또는 비밀번호를 확인해주세요.');
     }
-    */
-    // --- [테스트 모드 끝] ---
   };
 
+  // 회원가입 로직
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!id || !pw || !pwCheck || !nickname) {
-      alert("모든 정보를 입력해주세요.");
+      alert('모든 정보를 입력해주세요.');
       return;
     }
 
     if (pw !== pwCheck) {
-      alert("비밀번호가 일치하지 않습니다.");
+      alert('비밀번호가 일치하지 않습니다.');
       return;
     }
 
-    // --- [테스트 모드 시작] ---
-    console.log(`[TEST] 회원가입 정보: ID=${id}, Nick=${nickname}`);
-
-    setTimeout(() => {
-      alert("테스트 회원가입 완료! 로그인 해주세요.");
-      setIsLoginMode(true); // 로그인 화면으로 전환되는지 확인
-    }, 1000);
-
-    /* 진짜 API 코드는 잠시 꺼둠
     try {
-      const response = await axios.post(SIGNUP_URL, {
+      const response = await axios.post(`${API_URL}/signup`, {
         loginId: id,
         password: pw,
         nickname: nickname,
@@ -97,26 +79,23 @@ export default function AuthPage() {
 
       if (response.status === 200 || response.status === 201) {
         alert('회원가입 완료! 로그인 해주세요.');
-        setIsLoginMode(true); 
+        setIsLoginMode(true);
       }
     } catch (error: any) {
       console.error('회원가입 에러:', error);
-      alert('가입 실패. 이미 존재하는 아이디거나 서버 오류입니다.');
+      alert('회원가입에 실패했습니다.');
     }
-    */
-    // --- [테스트 모드 끝] ---
   };
 
   return (
-    <div className="auth-container">
-      <h1 className="auth-title">{isLoginMode ? "로그인" : "회원가입"}</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>
+        {isLoginMode ? '로그인' : '회원가입'}
+      </h1>
 
-      <form
-        className="auth-form"
-        onSubmit={isLoginMode ? handleLogin : handleSignup}
-      >
+      <form className={styles.form} onSubmit={isLoginMode ? handleLogin : handleSignup}>
         <input
-          className="auth-input"
+          className={styles.input}
           type="text"
           placeholder="아이디"
           value={id}
@@ -125,7 +104,7 @@ export default function AuthPage() {
 
         {!isLoginMode && (
           <input
-            className="auth-input"
+            className={styles.input}
             type="text"
             placeholder="닉네임"
             value={nickname}
@@ -134,7 +113,7 @@ export default function AuthPage() {
         )}
 
         <input
-          className="auth-input"
+          className={styles.input}
           type="password"
           placeholder="비밀번호"
           value={pw}
@@ -144,7 +123,7 @@ export default function AuthPage() {
 
         {!isLoginMode && (
           <input
-            className="auth-input"
+            className={styles.input}
             type="password"
             placeholder="비밀번호 확인"
             value={pwCheck}
@@ -153,17 +132,17 @@ export default function AuthPage() {
           />
         )}
 
-        <button type="submit" className="auth-button">
-          {isLoginMode ? "로그인" : "가입하기"}
+        <button type="submit" className={styles.button}>
+          {isLoginMode ? '로그인' : '가입하기'}
         </button>
       </form>
 
-      <div className="toggle-container">
+      <div className={styles.toggleContainer}>
         <span>
-          {isLoginMode ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}
+          {isLoginMode ? '계정이 없으신가요?' : '이미 계정이 있으신가요?'}
         </span>
-        <button type="button" className="toggle-link" onClick={toggleMode}>
-          {isLoginMode ? "회원가입하기" : "로그인하기"}
+        <button type="button" className={styles.toggleLink} onClick={toggleMode}>
+          {isLoginMode ? '회원가입하기' : '로그인하기'}
         </button>
       </div>
     </div>
