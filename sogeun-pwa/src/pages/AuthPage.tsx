@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // axios 임포트 확인
 import styles from './AuthPage.module.css';
 
 export default function AuthPage() {
@@ -15,6 +16,9 @@ export default function AuthPage() {
   const [pwCheck, setPwCheck] = useState('');
   const [nickname, setNickname] = useState('');
 
+  // Vercel 환경 변수에서 가져오는 API 주소
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://pruxd7efo3.execute-api.ap-northeast-2.amazonaws.com/clean](https://pruxd7efo3.execute-api.ap-northeast-2.amazonaws.com/clean';
+
   // 모드 전환 시 입력값 초기화
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
@@ -24,6 +28,7 @@ export default function AuthPage() {
     setNickname('');
   };
 
+  // 로그인 로직
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -32,22 +37,26 @@ export default function AuthPage() {
       return;
     }
 
-    // --- [테스트 모드 시작] ---
-    console.log(`[TEST] 로그인 시도: ID=${id}, PW=${pw}`);
+    try {
+      // 🚀 실제 백엔드와 통신 시도
+      const response = await axios.post(`${API_URL}/login`, {
+        loginId: id,
+        password: pw,
+      });
 
-    // 1초 뒤에 무조건 성공했다고 가정!
-    setTimeout(() => {
-      alert('토큰 없이 테스트 로그인 성공! (개발용)');
-      
-      // 👇 프로필 수정 페이지로 이동
-      navigate('/profile/edit');
-      
-      /* 진짜 코드 (나중에 사용)
-      navigate('/', { state: { userId: id } });
-      */
-    }, 1000);
+      if (response.status === 200 || response.status === 201) {
+        console.log('🎉 로그인 성공!', response.data);
+        alert('소근에 오신 것을 환영해요!');
+        // 로그인 성공 시 GPS 화면으로 이동
+        navigate('/gps', { state: { userId: id } });
+      }
+    } catch (error: any) {
+      console.error('로그인 에러:', error);
+      alert('로그인 실패! 아이디 또는 비밀번호를 확인해주세요.');
+    }
   };
 
+  // 회원가입 로직
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -61,13 +70,21 @@ export default function AuthPage() {
       return;
     }
 
-    // --- [테스트 모드 시작] ---
-    console.log(`[TEST] 회원가입 정보: ID=${id}, Nick=${nickname}`);
+    try {
+      const response = await axios.post(`${API_URL}/signup`, {
+        loginId: id,
+        password: pw,
+        nickname: nickname,
+      });
 
-    setTimeout(() => {
-      alert('테스트 회원가입 완료! 로그인 해주세요.');
-      setIsLoginMode(true); // 로그인 화면으로 전환
-    }, 1000);
+      if (response.status === 200 || response.status === 201) {
+        alert('회원가입 완료! 로그인 해주세요.');
+        setIsLoginMode(true);
+      }
+    } catch (error: any) {
+      console.error('회원가입 에러:', error);
+      alert('회원가입에 실패했습니다.');
+    }
   };
 
   return (
