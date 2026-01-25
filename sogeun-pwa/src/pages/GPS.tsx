@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 // 'verbatimModuleSyntax' 에러 해결을 위한 type import
 import type { Track } from "./SearchPage";
@@ -10,7 +10,7 @@ interface GPSProps {
   onSelectTrack: (track: Track) => void;
 }
 
-// 타입 정의 (기존 코드 유지)
+// 타입 정의 (기존 코드 유지 및 위경도 필드 추가)
 interface HUDCircle {
   id: number;
   r: number;
@@ -23,8 +23,10 @@ interface DetectedUser {
   name: string;
   song: string;
   distance: string;
-  angle: number;
-  radius: number;
+  lat: number; // 실제 위도
+  lng: number; // 실제 경도
+  angle: number; // 계산될 각도
+  radius: number; // 계산될 반경
 }
 interface Particle {
   id: number;
@@ -107,7 +109,10 @@ const GPS: React.FC<GPSProps> = ({
   currentTrack,
   onSelectTrack,
 }) => {
-  // 주변 사용자 데이터 (기존 코드 유지)
+  /* ---------------------------------------------------------
+     [기존 코드: 주석 처리] 
+     기존에는 고정된 angle과 radius 데이터만 사용했습니다.
+  ------------------------------------------------------------
   const [nearbyUsers] = useState<DetectedUser[]>([
     {
       id: 1,
@@ -118,6 +123,68 @@ const GPS: React.FC<GPSProps> = ({
       radius: 80,
     },
   ]);
+  --------------------------------------------------------- */
+
+  // [신규 로직: 실시간 위치 기반 사용자 관리]
+  const [nearbyUsers, setNearbyUsers] = useState<DetectedUser[]>([
+    {
+      id: 1,
+      name: "Coimhia",
+      song: "밤의 산책",
+      distance: "계산중...",
+      lat: 37.5562, // 주변 샘플 좌표 (서울역 근처)
+      lng: 126.9725,
+      angle: 0,
+      radius: 0,
+    },
+    {
+      id: 2,
+      name: "Hongik",
+      song: "Campus Life",
+      distance: "계산중...",
+      lat: 37.5506, // 주변 샘플 좌표
+      lng: 126.9257,
+      angle: 0,
+      radius: 0,
+    },
+  ]);
+
+  // 핵심: Geolocation API를 이용한 실시간 위치 추적 및 레이더 좌표 계산
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        setNearbyUsers((prev) =>
+          prev.map((user) => {
+            // 위도/경도 차이 계산
+            const dy = user.lat - latitude;
+            const dx = user.lng - longitude;
+
+            // 1. 각도 계산 (Math.atan2를 활용하여 레이더상의 각도 도출)
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+            // 2. 거리 계산 및 레이더 반경(radius)으로 변환
+            const rawDist = Math.sqrt(dx * dx + dy * dy) * 100000;
+            const radius = Math.min(rawDist, 140); // 레이더 크기(140px) 내로 제한
+
+            return {
+              ...user,
+              angle,
+              radius,
+              distance: `${Math.floor(rawDist / 10)}m`,
+            };
+          }),
+        );
+      },
+      (error) => console.error("위치 추적 오류:", error),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: 40 }, (_, i) => ({
@@ -275,6 +342,7 @@ const GPS: React.FC<GPSProps> = ({
           />
         ))}
 
+        {/* 핵심: 실시간으로 변하는 user.angle과 user.radius 적용 */}
         {nearbyUsers.map((user) => (
           <div
             key={user.id}
@@ -302,7 +370,6 @@ const GPS: React.FC<GPSProps> = ({
           </div>
         ))}
 
-        {/* 현재 내가 재생 중인 음악 (하단 말풍선) */}
         <div className="absolute bottom-[-10px] z-[100] pointer-events-auto">
           <AnimatePresence>
             {currentTrack && (
@@ -311,7 +378,7 @@ const GPS: React.FC<GPSProps> = ({
                 initial={{ opacity: 0, scale: 0.8, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                onClick={() => onSelectTrack(currentTrack)} // 클릭 상호작용 추가
+                onClick={() => onSelectTrack(currentTrack)}
                 className="bg-white/30 backdrop-blur-xl border border-white/40 px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-3 min-w-[150px] cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-xl bg-white/20 overflow-hidden border border-white/40">
@@ -337,7 +404,6 @@ const GPS: React.FC<GPSProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* 중앙 아크 및 심전도 */}
         <div className="relative flex items-center justify-center w-[280px] h-[280px] rounded-full">
           <div className="absolute inset-[-35px] z-20 pointer-events-none">
             <motion.svg
@@ -408,7 +474,6 @@ const GPS: React.FC<GPSProps> = ({
         </button>
       </div>
 
-      {/* 하단 리스트 */}
       <div className="flex-1 px-6 pb-32 z-10 overflow-y-auto space-y-4 scrollbar-hide">
         {nearbyUsers.map((user) => (
           <div
@@ -432,14 +497,13 @@ const GPS: React.FC<GPSProps> = ({
               </div>
               <div className="flex items-center justify-end font-black text-[10px] opacity-80">
                 <div className="w-1.5 h-1.5 bg-pink-400 rounded-full mr-1.5" />
-                {user.distance}
+                {user.distance} {/* 실시간 거리 표시 */}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* 하단 탭 바 */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[85%] h-20 bg-white/95 backdrop-blur-3xl rounded-[40px] border border-white/50 flex justify-around items-center px-6 shadow-2xl z-[100]">
         <button className="flex flex-col items-center text-pink-500 font-black">
           <Icons.Home />
