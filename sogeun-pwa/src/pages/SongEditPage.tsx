@@ -31,15 +31,26 @@ const SongEditPage: React.FC = () => {
     return token;
   };
 
+  // GPS 권한이 없거나 http 환경이어도 튕기지 않고 기본 좌표(서울)로 우회
   const getCurrentLocation = (): Promise<{ latitude: number; longitude: number }> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
+      // 위치 정보 기능을 아예 지원하지 않는 환경일 경우
       if (!navigator.geolocation) {
-        reject(new Error("위치 서비스를 지원하지 않습니다."));
+        console.warn("⚠️ 위치 기능을 지원하지 않아 기본 위치(서울)를 사용합니다.");
+        resolve({ latitude: 37.566535, longitude: 126.977969 }); // 서울 좌표
         return;
       }
+
       navigator.geolocation.getCurrentPosition(
-        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-        (err) => reject(err),
+        (pos) => {
+          // 성공: 내 진짜 위치 반환
+          resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        },
+        (err) => {
+          // 실패: 에러 뿜지 말고 그냥 기본 위치(서울) 반환해서 앱이 멈추지 않게 방어
+          console.warn("⚠️ 위치 권한 거부 또는 HTTP 환경 문제. 기본 위치(서울)를 사용합니다.", err);
+          resolve({ latitude: 37.566535, longitude: 126.977969 }); // 서울 좌표
+        },
         { enableHighAccuracy: true, timeout: 5000 }
       );
     });
@@ -66,23 +77,24 @@ const SongEditPage: React.FC = () => {
     };
 
     try {
-      console.log("🎵 음악 변경 시도...");
+      console.log("음악 변경 시도...");
       await axios.post(`${BASE_URL}/api/broadcast/changemusic`, { music: musicData }, config);
       
-      // ✅ [데이터 즉시 반영 핵심] 로컬 스토리지에 노래 정보 저장
-      // 프로필 페이지에서 이 값을 읽어서 "한로로"를 갈아끼우게 됩니다.
+      // 로컬 스토리지에 노래 정보 저장
       localStorage.setItem("temp_trackName", track.trackName);
       localStorage.setItem("temp_artistName", track.artistName);
       
       alert(`'${track.trackName}' 변경 완료!`);
-      
-      // ✅ 로그인 페이지로 튕기지 않게 히스토리 뒤로가기 사용
       navigate(-1); 
       
     } catch (error: any) {
       if (error.response?.status === 409) {
+        // 409 에러 (현재 방송 중이 아님) -> 새 방송 시작 로직
         try {
-          const loc = await getCurrentLocation();
+          console.log("방송이 없어 새로 시작합니다. 위치 정보 확인 중...");
+          // 이제 여기서 무조건 좌표(실제 or 서울)를 받아오므로 에러가 나지 않음
+          const loc = await getCurrentLocation(); 
+          
           const onPayload = {
             title: `${track.trackName} 방송`.slice(0, 15),
             content: "함께 들어요!",
@@ -93,20 +105,27 @@ const SongEditPage: React.FC = () => {
 
           await axios.post(`${BASE_URL}/api/broadcast/on`, onPayload, config);
           
-          // ✅ 방송 시작 시에도 동일하게 저장
+          // 방송 시작 성공 시 로컬스토리지 저장
           localStorage.setItem("temp_trackName", track.trackName);
           localStorage.setItem("temp_artistName", track.artistName);
 
-          await new Promise(resolve => setTimeout(resolve, 500));
-          alert("방송을 시작했습니다!");
+          alert("새로운 방송을 시작했습니다!");
           navigate(-1); 
           
         } catch (innerError: any) {
-          alert("방송 시작 실패");
+          console.error("방송 시작 실패 상세 에러:", innerError);
+          
+          // 서버 통신 실패 등의 에러 처리
+          if (innerError.response) {
+            alert(`서버 연동 실패\n에러코드: ${innerError.response.status}\n메시지: ${JSON.stringify(innerError.response.data)}`);
+          } else {
+            alert(`알 수 없는 오류: ${innerError.message}`);
+          }
         }
       } else {
-        alert("오류 발생");
+        alert(`음악 변경 실패: ${error.response?.data?.message || "서버 오류"}`);
       }
+    } finally {
       setSelectedTrackId(null);
     }
   };
@@ -123,19 +142,21 @@ const SongEditPage: React.FC = () => {
         artworkUrl100: item.artworkUrl100, previewUrl: item.previewUrl,
       })));
       setLimit(newLimit);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error("검색 에러:", err); 
+    }
   };
 
   return (
     <motion.div
       initial={{ y: "100%" }} animate={{ y: 0 }}
-      className="fixed inset-0 z-50 flex flex-col pt-12"
+      className="fixed top-0 left-1/2 w-full max-w-[430px] h-[100dvh] -translate-x-1/2 z-50 flex flex-col pt-12 shadow-2xl overflow-hidden"
       style={{ background: "linear-gradient(169deg, #f8c1e9 0%, #c3c3ec 34.81%, #9fc3e9 66.28%, #6bcda6 99.18%)", backgroundAttachment: "fixed" }}
     >
       <audio ref={audioRef} />
       <div className="w-full flex items-center justify-between px-5 mb-6 text-white font-bold">
-        <button onClick={() => navigate(-1)} className="p-2">뒤로</button>
-        <h1 className="text-[18px]">노래변경</h1>
+        <button onClick={() => navigate(-1)} className="p-2 cursor-pointer">뒤로</button>
+        <h1 className="text-[18px]">노래 변경</h1>
         <div className="w-8" />
       </div>
 
@@ -147,14 +168,14 @@ const SongEditPage: React.FC = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSearch(true)} 
             placeholder="음악 검색..." 
           />
-          <button onClick={() => handleSearch(true)} className="text-[#FF4D4D] font-bold ml-2">검색</button>
+          <button onClick={() => handleSearch(true)} className="text-[#FF4D4D] font-bold ml-2 cursor-pointer">검색</button>
         </div>
 
         <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
           {results.map((track) => (
             <div 
               key={track.trackId}
-              className="flex items-center p-3 rounded-[20px] mb-3 bg-white/60 border border-white/20 cursor-pointer"
+              className="flex items-center p-3 rounded-[20px] mb-3 bg-white/60 border border-white/20 cursor-pointer transition-transform active:scale-95"
               onClick={() => { if (audioRef.current) { audioRef.current.src = track.previewUrl; audioRef.current.play(); } }}
             >
               <img src={track.artworkUrl100} className="w-12 h-12 rounded-xl mr-4 shadow-sm" alt="" />
@@ -164,7 +185,7 @@ const SongEditPage: React.FC = () => {
               </div>
               <button 
                 onClick={(e) => { e.stopPropagation(); handleSelectTrack(track); }}
-                className="text-[13px] font-bold px-3 py-1.5 rounded-full bg-white/80 active:scale-95 transition-transform"
+                className="text-[13px] font-bold px-3 py-1.5 rounded-full bg-white/80 active:scale-95 transition-transform cursor-pointer"
               >
                 {selectedTrackId === track.trackId ? "..." : "선택"}
               </button>

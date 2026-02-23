@@ -82,52 +82,75 @@ export default function ProfileEditPage() {
   };
 
   return (
-    // 🚨 1. 최상위 부모에 position: 'relative' 추가 (모바일 화면의 기준점 역할)
-    // padding-top을 줘서 absolute로 띄운 헤더가 아래 내용을 가리지 않게 합니다.
+    // 전체 틀을 단단하게 잡아주는 컨테이너 설정
     <div 
       className="clean-profile-bg" 
       style={{ 
         position: 'relative', 
         width: '100%', 
+        maxWidth: '430px', // 데스크톱에서도 모바일처럼 보이게 고정
+        margin: '0 auto',  // 가운데 정렬
         minHeight: '100vh', 
-        paddingTop: '60px', // 헤더 높이만큼 공간 확보
-        boxSizing: 'border-box'
+        paddingTop: '60px', 
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column', // 무조건 위에서 아래로 쌓이게 강제
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        overflowX: 'hidden'
       }}
     >
       
-      {/* 🚨 2. 헤더에 position: 'absolute' 적용 (기준점에 맞춰 상단 고정) */}
+      {/* 상단 헤더: 위치 고정 및 정렬 */}
       <div 
-        className="profile-header-container" 
         style={{ 
           position: 'absolute', 
           top: 0, 
           left: 0, 
           width: '100%', 
-          padding: '15px 20px', 
+          height: '60px',
+          padding: '0 20px', 
           boxSizing: 'border-box',
-          display: 'flex',              // 좌중우 배치를 위해 추가
+          display: 'flex',              
           justifyContent: 'space-between',
           alignItems: 'center',
           zIndex: 10
         }}
       >
-        <button className="header-btn" onClick={() => navigate(-1)} style={{ background: 'transparent', border: 'none' }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
           <Icons.Back />
         </button>
         
-        <span className="profile-header-title">프로필 수정</span>
+        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>프로필 수정</span>
         
-        <button className="header-btn confirm-btn" onClick={handleSubmit} style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold' }}>
+        <button 
+          onClick={handleSubmit} 
+          style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', padding: 0 }}
+        >
           확인
         </button>
       </div>
 
-      {/* 2. 프로필 사진 편집 영역 */}
-      <div className="profile-edit-section" style={{ marginTop: '20px', marginBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* 🚨 프로필 사진 편집 영역 */}
+      <div style={{ marginTop: '40px', marginBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div 
-          className="profile-image-circle" 
           onClick={handleProfileClick}
-          style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)', border: '2px solid white' }}
+          style={{ 
+            width: '110px', 
+            height: '110px', 
+            borderRadius: '50%', 
+            overflow: 'hidden', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            backgroundColor: 'rgba(255,255,255,0.2)', 
+            border: '3px solid white',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+          }}
         >
           {previewUrl ? (
             <img src={previewUrl} alt="프로필 미리보기" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -144,19 +167,33 @@ export default function ProfileEditPage() {
           accept="image/*"
         />
 
-        <span className="profile-edit-label" style={{ marginTop: '10px', color: 'white' }}>사진 편집</span>
+        <span style={{ marginTop: '12px', color: 'white', fontSize: '14px', fontWeight: '500', opacity: 0.9 }}>
+          사진 편집
+        </span>
       </div>
 
-      {/* 3. 닉네임 입력 영역 */}
-      <div className="nickname-row" style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <label className="nickname-label-text" style={{ color: 'white', fontWeight: 'bold' }}>닉네임</label>
+      {/* 🚨 닉네임 입력 영역 */}
+      <div style={{ width: '100%', padding: '0 30px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <label style={{ color: 'white', fontWeight: 'bold', fontSize: '14px', marginLeft: '5px' }}>
+          닉네임
+        </label>
         <input 
-          className="nickname-input-custom"
           type="text" 
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           placeholder="닉네임을 입력하세요"
-          style={{ width: '100%', padding: '15px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.3)', backgroundColor: 'rgba(0,0,0,0.2)', color: 'white', outline: 'none', boxSizing: 'border-box' }}
+          style={{ 
+            width: '100%', 
+            padding: '16px', 
+            borderRadius: '12px', 
+            border: '1px solid rgba(255,255,255,0.4)', 
+            backgroundColor: 'rgba(255,255,255,0.15)', 
+            color: 'white', 
+            fontSize: '16px',
+            outline: 'none', 
+            boxSizing: 'border-box',
+            backdropFilter: 'blur(10px)'
+          }}
         />
       </div>
 

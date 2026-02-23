@@ -46,7 +46,7 @@ const Splash = () => (
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#fff", // 이미지 자체 배경이 흰색에 가까울 경우
-        boxShadow: "0 0 20px rgba(0,0,0,0.1)", // PC에서 볼 때 경계선이 살짝 보이게 (선택사항)
+        boxShadow: "0 0 20px rgba(0,0,0,0.1)", // PC에서 볼 때 경계선이 살짝 보이게
       }}
     >
       <img
@@ -55,7 +55,7 @@ const Splash = () => (
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "cover", // 너비를 제한했으므로 이제 cover를 써도 예쁘게 나옵니다
+          objectFit: "cover",
         }}
       />
     </div>

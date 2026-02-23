@@ -1,16 +1,17 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, type PanInfo } from "framer-motion";
+import axios from "axios";
 import "../index.css";
 
-// 트랙 인터페이스 (기존과 동일하되, 추천인 정보 추가 등 확장을 위해 유지)
+// 트랙 인터페이스
 export interface Track {
   trackId: number;
   trackName: string;
   artistName: string;
   artworkUrl100: string;
   previewUrl: string;
-  likedCount: number; // 추천 수 (예시 데이터용)
+  likedCount: number;
 }
 
 const SogeunSongsPage: React.FC = () => {
@@ -18,35 +19,55 @@ const SogeunSongsPage: React.FC = () => {
   const [playingTrackId, setPlayingTrackId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- [임시] 가짜 데이터 (백엔드 연동 전 UI 확인용) ---
-  const [sogeunSongs] = useState<Track[]>([
-    {
-      trackId: 1,
-      trackName: "Hype Boy",
-      artistName: "NewJeans",
-      artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/0e/e8/3f/0ee83f3e-c6f6-17db-e160-5ae86c221e06/cover.jpg/100x100bb.jpg",
-      previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/4e/02/64/4e0264d2-6467-5431-7c43-585489063248/mzaf_6288894176337191398.plus.aac.p.m4a",
-      likedCount: 12,
-    },
-    {
-      trackId: 2,
-      trackName: "Ditto",
-      artistName: "NewJeans",
-      artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/31/6a/d2/316ad22f-d864-15de-4d43-080b08051663/cover.jpg/100x100bb.jpg",
-      previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview123/v4/21/2a/39/212a3928-1422-4416-7d63-548c26359f51/mzaf_12496294711977726557.plus.aac.p.m4a",
-      likedCount: 8,
-    },
-    {
-        trackId: 3,
-        trackName: "Attention",
-        artistName: "NewJeans",
-        artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/0e/e8/3f/0ee83f3e-c6f6-17db-e160-5ae86c221e06/cover.jpg/100x100bb.jpg",
-        previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/2e/00/c5/2e00c50d-d01c-0c1f-4e0e-4340579e05ce/mzaf_4718507742686851608.plus.aac.p.m4a",
-        likedCount: 5,
-    },
-  ]);
+  // 임시 데이터를 지우고 빈 배열로 시작함
+  const [sogeunSongs, setSogeunSongs] = useState<Track[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // --- 오디오 로직 (기존과 동일) ---
+  const API_URL = "https://api.sogeun.cloud";
+
+  // 서버에서 소근(좋아요) 받은 노래 목록을 가져오는 함수
+  useEffect(() => {
+    const fetchSogeunSongs = async () => {
+      try {
+        let rawToken = localStorage.getItem("accessToken") || localStorage.getItem("token") || "";
+        const cleanToken = rawToken.replace(/['"<>\\]/g, "").trim();
+
+        if (!cleanToken) {
+          console.warn("토큰이 없습니다.");
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/api/library/sogeun`, {
+          headers: { Authorization: `Bearer ${cleanToken}` },
+        });
+
+        if (response.status === 200 && response.data?.songs) {
+          // 백엔드 데이터 형식을 화면 UI 형식(Track)에 맞게 변환(Mapping)
+          const mappedSongs: Track[] = response.data.songs.map((song: any, index: number) => ({
+            trackId: song.trackId || index,
+            trackName: song.title || song.trackName || "알 수 없는 곡",
+            artistName: song.artist || song.artistName || "알 수 없는 아티스트",
+            // 서버의 이미지 필드명(artworkUrl, imageUrl, cover 등)에 유연하게 대응
+            artworkUrl100: song.artworkUrl || song.imageUrl || song.cover || "https://via.placeholder.com/100",
+            previewUrl: song.previewUrl || "",
+            // 추천 수 필드명 (서버 응답에 맞춰 수정될 수 있음)
+            likedCount: song.likesCount || song.sogeunCount || song.likedCount || 1,
+          }));
+
+          setSogeunSongs(mappedSongs);
+        }
+      } catch (error) {
+        console.error("소근한 노래 목록을 불러오는 중 에러 발생:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSogeunSongs();
+  }, []); // 컴포넌트가 처음 열릴 때 1번만 실행됨
+
+  // --- 오디오 로직 ---
   const handleAlbumClick = (e: React.MouseEvent, track: Track) => {
     e.stopPropagation();
     
@@ -75,10 +96,7 @@ const SogeunSongsPage: React.FC = () => {
   // ------------------------------------------------------------------
   const TrackItem = ({ track }: { track: Track }) => {
     return (
-      <div
-        className="flex items-center p-3 rounded-[20px] mb-3 transition-colors duration-200
-                   bg-white/60 border border-white/20 shadow-sm hover:bg-white/70"
-      >
+      <div className="flex items-center p-3 rounded-[20px] mb-3 transition-colors duration-200 bg-white/60 border border-white/20 shadow-sm hover:bg-white/70">
         {/* 앨범 커버 & 재생 버튼 */}
         <div
           className="relative w-12 h-12 rounded-xl mr-4 shrink-0 overflow-hidden cursor-pointer shadow-sm"
@@ -108,7 +126,7 @@ const SogeunSongsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 우측 정보: '선택' 버튼 대신 '추천 수' 표시 */}
+        {/* 우측 정보: 추천 수 표시 */}
         <div className="flex items-center gap-1 bg-white/50 px-3 py-1.5 rounded-full">
             <svg className="w-4 h-4 fill-[#FF4B6E]" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -156,18 +174,24 @@ const SogeunSongsPage: React.FC = () => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden px-5 w-full">
-        {/* --- 설명 텍스트 (옵션) --- */}
+        {/* --- 설명 텍스트 --- */}
         <div className="mb-4 px-2">
             <p className="text-white/90 text-sm font-medium">
                 친구들이 내 노래에 '소근'을 눌러준 목록이에요.
             </p>
         </div>
 
-        {/* --- 리스트 --- */}
+        {/* --- 리스트 영역 --- */}
         <div className="flex-1 overflow-y-auto space-y-1 pb-24 scrollbar-hide">
-            {sogeunSongs.map((t) => (
-            <TrackItem key={t.trackId} track={t} />
-            ))}
+          {isLoading ? (
+            <div className="text-center text-white/80 mt-10 font-bold">노래를 불러오는 중입니다...</div>
+          ) : sogeunSongs.length > 0 ? (
+            sogeunSongs.map((t) => (
+              <TrackItem key={t.trackId} track={t} />
+            ))
+          ) : (
+            <div className="text-center text-white/80 mt-10 font-bold">아직 소근받은 노래가 없어요!</div>
+          )}
         </div>
       </div>
     </motion.div>
